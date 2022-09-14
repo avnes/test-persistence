@@ -1,0 +1,86 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: test-persistence
+  name: test-persistence
+  namespace: test-persistence
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: test-persistence
+  template:
+    metadata:
+      labels:
+        app: test-persistence
+    spec:
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: test-persistence-pvc
+      containers:
+        - image: docker.io/avnes/test-persistence
+          name: test-persistence
+          resources:
+            limits:
+              memory: "1Gi"
+            requests:
+              cpu: "100m"
+              memory: "1Gi"
+          env:
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: postgres
+                  key: username
+                  optional: false
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres
+                  key: password
+                  optional: false
+            - name: POSTGRES_DB
+              value: "postgres"
+            - name: POSTGRES_HOSTNAME
+              value: "postgres"
+            - name: POSTGRES_PORT
+              value: "5432"
+            - name: APP_FILES_DIR
+              value: "/data"
+          readinessProbe:
+            httpGet:
+              path: /persistence/healthz
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: 8080
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          ports:
+            - containerPort: 8080
+              name: web
+          volumeMounts:
+            - name: data
+              mountPath: /data
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: test-persistence
+  name: test-persistence
+  namespace: test-persistence
+spec:
+  ports:
+    - name: web
+      port: 8080
+      protocol: TCP
+      targetPort: 8080
+  selector:
+    app: test-persistence
+  type: ClusterIP

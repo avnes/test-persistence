@@ -1,0 +1,180 @@
+definitions:
+  common.Counter:
+    properties:
+      count:
+        type: integer
+    type: object
+  database.randomData:
+    properties:
+      last_modified:
+        type: string
+      uuid:
+        type: string
+    type: object
+  filesystem.metadata:
+    properties:
+      elapsed_in_seconds:
+        type: number
+      filename:
+        type: string
+      last_modified:
+        type: string
+      size_in_bytes:
+        type: integer
+      type:
+        type: string
+    type: object
+info:
+  contact: {}
+paths:
+  /database:
+    delete:
+      consumes:
+      - application/json
+      description: Delete all the random test data
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: boolean
+      summary: Delete random data
+      tags:
+      - persistent
+    get:
+      consumes:
+      - application/json
+      description: Return a list of random data from a database. Random data is a
+        GUID and a timestamp
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/database.randomData'
+      summary: Get random data
+      tags:
+      - persistent
+    post:
+      consumes:
+      - multipart/form-data
+      description: Inserts new records into the database
+      parameters:
+      - default: 10
+        in: formData
+        name: number_of_inserts
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            type: boolean
+      summary: Post random data
+      tags:
+      - persistent
+  /database/count:
+    get:
+      consumes:
+      - application/json
+      description: Return a count of rows in the random data table
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/common.Counter'
+      summary: Get random data count
+      tags:
+      - persistent
+  /files:
+    delete:
+      consumes:
+      - application/json
+      description: Delete the test files
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: boolean
+      summary: Delete files
+      tags:
+      - persistent
+    get:
+      consumes:
+      - application/json
+      description: Return a list of files from the filesystem with name, size, modification
+        date and file type information.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/filesystem.metadata'
+      summary: Get files
+      tags:
+      - persistent
+    post:
+      consumes:
+      - multipart/form-data
+      description: Create new files on the filesystem
+      parameters:
+      - default: 5
+        in: formData
+        name: number_of_files
+        required: true
+        type: integer
+      - default: 10485760
+        in: formData
+        name: size_in_bytes
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/filesystem.metadata'
+      summary: Post files
+      tags:
+      - persistent
+  /files/count:
+    get:
+      consumes:
+      - application/json
+      description: Return a count of the number of files
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/common.Counter'
+      summary: Get files count
+      tags:
+      - persistent
+  /setup:
+    post:
+      consumes:
+      - application/json
+      description: Create a table in the database and a directory on the filesystem
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            type: string
+      summary: Setup filesystem and database
+      tags:
+      - persistent
+swagger: "2.0"

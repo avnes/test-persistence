@@ -1,0 +1,28 @@
+version: "3.9"
+services:
+  api:
+    depends_on:
+      - database
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=demo1234
+      - POSTGRES_DB=postgres
+      - POSTGRES_HOSTNAME=database
+      - POSTGRES_PORT=5432
+      - APP_FILES_DIR=/tmp/files
+    build: .
+    ports:
+      - "8888:8080"
+    volumes:
+      - "/tmp/files:/tmp/files"
+  database:
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=demo1234
+      - POSTGRES_DB=postgres
+      - PG_DATA=/var/lib/postgresql/data/pgdata
+    image: postgres
+    volumes:
+      - "/tmp/postgres:/var/lib/postgresql/data"
+    ports:
+      - "5432:5432"
